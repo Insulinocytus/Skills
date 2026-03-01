@@ -21,18 +21,6 @@ gog <service> <action> [arguments] [flags]
 
 **Top-level aliases:** `send` (gmail), `ls`/`search`/`download`/`upload` (drive), `me`/`whoami` (people)
 
-## Quick Reference
-
-| Task | Command Pattern | Example |
-|------|----------------|---------|
-| List items | `gog <service> list` | `gog calendar events` |
-| Search | `gog <service> search <query>` | `gog drive search "report"` |
-| Get details | `gog <service> get <id>` | `gog drive get <fileId>` |
-| Create | `gog <service> create [flags]` | `gog calendar create --summary "Meeting"` |
-| Delete | `gog <service> delete <id>` | `gog drive delete <fileId>` |
-| Upload file | `gog drive upload <path>` | `gog upload report.pdf` |
-| Send email | `gog send --to user@example.com` | `gog send --to alice@example.com --subject "Hi"` |
-
 ## Discovery Workflow
 
 When encountering unfamiliar gogcli tasks:
@@ -41,146 +29,148 @@ When encountering unfamiliar gogcli tasks:
 2. **Explore service:** `gog <service> --help` (shows subcommands)
 3. **Check command details:** `gog <service> <action> --help` (shows flags and arguments)
 
+## Quick Reference - Gmail
+
+### Most Common Operations
+
+**List emails (newest first):**
+```bash
+gog gmail search "in:inbox" --oldest=false
+```
+
+**Show emails from last 24 hours:**
+```bash
+gog gmail search "newer_than:1d"
+```
+
+**List emails newest first from last 24 hours:**
+```bash
+gog gmail search "newer_than:1d" --oldest=false
+```
+
+**Search with filters:**
+```bash
+gog gmail search "from:alice@example.com subject:report"
+gog gmail search "is:unread has:attachment"
+```
+
+**Send email:**
+```bash
+gog send --to user@example.com --subject "Hello" --body "Message"
+gog send --to user@example.com --subject "Report" --attach file.pdf
+```
+
+**Get email details:**
+```bash
+gog gmail get <messageId>
+```
+
+**Mark as read/starred:**
+```bash
+gog gmail thread modify <threadId> --remove UNREAD  # Mark as read
+gog gmail thread modify <threadId> --add STARRED    # Star
+```
+
+### Advanced Gmail Features
+
+For detailed documentation on advanced Gmail features, see [gmail-reference.md](references/gmail-reference.md):
+- Advanced search syntax and query operators
+- HTML emails, attachments, and tracking
+- Draft management workflow
+- Label management and batch operations
+- Thread operations and attachment handling
+
+## Quick Reference - Calendar
+
+### Most Common Operations
+
+**Get calendar events (custom time range):**
+```bash
+# Using specific dates
+gog calendar events primary --from "2026-02-27" --to "2026-03-16"
+
+# Using relative keywords
+gog calendar events primary --from "monday" --to "friday"
+```
+
+**List upcoming events:**
+```bash
+gog calendar events                    # Default upcoming events
+gog calendar events --today            # Today's events
+gog calendar events --week             # This week
+gog calendar events --days 7           # Next 7 days
+```
+
+**List events for specific time range:**
+```bash
+gog calendar events primary --from 2026-03-01 --to 2026-03-31
+gog calendar events primary --from "2026-03-05T09:00:00+09:00" --to "2026-03-05T17:00:00+09:00"
+```
+
+**Create simple event:**
+```bash
+gog calendar create primary --summary "Meeting" --from "2026-03-05T10:00:00+09:00" --to "2026-03-05T11:00:00+09:00"
+gog calendar create primary --summary "Team Sync" --attendees "alice@example.com,bob@example.com" --from "2026-03-05T14:00:00+09:00" --to "2026-03-05T15:00:00+09:00"
+```
+
+**Search events:**
+```bash
+gog calendar search "meeting"
+gog calendar search "standup" --from 2026-03-01
+```
+
+**Respond to invitation:**
+```bash
+gog calendar respond primary <eventId> --status accepted
+gog calendar respond primary <eventId> --status declined --comment "Conflict"
+```
+
+**Get event details:**
+```bash
+gog calendar event primary <eventId>
+```
+
+### Advanced Calendar Features
+
+For detailed documentation on advanced Calendar features, see [calendar-reference.md](references/calendar-reference.md):
+- Recurring events and RRULE syntax
+- Special event types (focus-time, out-of-office, working-location)
+- Advanced event options (reminders, colors, visibility, guest permissions)
+- Freebusy queries and conflict detection
+- Team calendars and ACL management
+
 ## Common Flags
 
 - `-j, --json`: Output JSON (for scripting)
 - `-p, --plain`: Output parseable text (TSV)
+- `--results-only`: Output only main results (no pagination tokens)
 - `-n, --dry-run`: Preview without making changes
 - `-y, --force`: Skip confirmations
 - `-a, --account`: Specify account email
 - `--select`: Select specific JSON fields
+- `--no-input`: Never prompt (fail instead, useful for automation)
 
 ## Common Patterns
-
-**List with filters:**
-```bash
-gog calendar events --from 2026-03-01 --to 2026-03-31
-gog drive ls --query "mimeType='application/pdf'"
-```
 
 **JSON output for scripting:**
 ```bash
 gog people me --json | jq '.emailAddresses'
 gog drive search "budget" --json --results-only
+gog gmail search "query" --json --results-only | jq -r '.messages[].id'
 ```
 
 **Batch operations:**
 ```bash
-# Find and process multiple files
-gog drive search "old report" --json | jq -r '.files[].id' | while read id; do
-  gog drive delete "$id"
+# Find and process multiple items
+gog gmail search "older_than:1y" --json --results-only | jq -r '.messages[].id' | while read id; do
+  gog gmail batch modify "$id" --remove INBOX
 done
 ```
 
-## Gmail CRUD Operations
-
-### Create (Send Email)
+**Dry-run before execution:**
 ```bash
-# Basic email
-gog gmail send --to user@example.com --subject "Hello" --body "Message content"
-
-# With attachments and CC
-gog send --to alice@example.com --cc bob@example.com --subject "Report" --body "See attached" --attach report.pdf
-
-# HTML email
-gog send --to team@example.com --subject "Update" --body-html "<h1>Title</h1><p>Content</p>"
-
-# Reply to thread
-gog gmail send --reply-to-message-id <messageId> --reply-all --body "Thanks!"
-```
-
-### Read (Search & Get)
-```bash
-# Search emails (Gmail query syntax)
-gog gmail search "from:alice@example.com subject:report"
-gog gmail search "is:unread after:2026/03/01"
-gog gmail search "has:attachment larger:5M"
-
-# Get specific message
-gog gmail get <messageId>
-gog gmail get <messageId> --json | jq '.payload.headers'
-
-# Download attachment
-gog gmail attachment <messageId> <attachmentId> --output file.pdf
-```
-
-### Update (Modify Thread/Labels)
-```bash
-# Add/remove labels
-gog gmail thread modify <threadId> --add-labels IMPORTANT,STARRED
-gog gmail thread modify <threadId> --remove-labels UNREAD
-
-# Mark as read/unread
-gog gmail thread modify <threadId> --remove-labels UNREAD  # mark read
-gog gmail thread modify <threadId> --add-labels UNREAD     # mark unread
-```
-
-### Delete (Trash/Delete)
-```bash
-# Move to trash
-gog gmail thread modify <threadId> --add-labels TRASH
-
-# Permanent delete (use with caution)
-gog gmail messages delete <messageId> --permanent
-```
-
-## Calendar CRUD Operations
-
-### Create Event
-```bash
-# Basic event (calendarId is usually "primary" or email address)
-gog calendar create primary --summary "Team Meeting" --from "2026-03-05T10:00:00+09:00" --to "2026-03-05T11:00:00+09:00"
-
-# With attendees and location
-gog calendar create primary --summary "Project Review" --from "2026-03-05T14:00:00+09:00" --to "2026-03-05T15:00:00+09:00" --attendees "alice@example.com,bob@example.com" --location "Conference Room A"
-
-# All-day event
-gog calendar create primary --summary "Holiday" --from "2026-03-10" --to "2026-03-11" --all-day
-
-# With Google Meet
-gog calendar create primary --summary "Remote Standup" --from "2026-03-05T09:00:00+09:00" --to "2026-03-05T09:30:00+09:00" --with-meet
-
-# Recurring event
-gog calendar create primary --summary "Weekly Sync" --from "2026-03-05T10:00:00+09:00" --to "2026-03-05T10:30:00+09:00" --rrule "FREQ=WEEKLY;BYDAY=TU"
-```
-
-### Read (List & Get)
-```bash
-# List upcoming events
-gog calendar events
-gog calendar events primary --from 2026-03-01 --to 2026-03-31
-
-# Get specific event
-gog calendar event primary <eventId>
-
-# Search events
-gog calendar search "standup" --from 2026-03-01
-
-# Check free/busy
-gog calendar freebusy primary --from "2026-03-05T09:00:00+09:00" --to "2026-03-05T17:00:00+09:00"
-```
-
-### Update Event
-```bash
-# Update event details
-gog calendar update primary <eventId> --summary "Updated Title"
-gog calendar update primary <eventId> --from "2026-03-05T15:00:00+09:00" --to "2026-03-05T16:00:00+09:00"
-
-# Add attendees
-gog calendar update primary <eventId> --attendees "alice@example.com,bob@example.com,charlie@example.com"
-
-# Respond to invitation
-gog calendar respond primary <eventId> --response accepted
-gog calendar respond primary <eventId> --response declined --comment "Conflict"
-```
-
-### Delete Event
-```bash
-# Delete event
-gog calendar delete primary <eventId>
-
-# Delete without confirmation
-gog calendar delete primary <eventId> -y
+gog calendar delete primary <eventId> --dry-run  # Preview first
+gog calendar delete primary <eventId> -y         # Then execute
 ```
 
 ## Agent-Friendly Features
@@ -190,13 +180,11 @@ gog calendar delete primary <eventId> -y
 - `--json --results-only`: Clean JSON output without envelope
 - `--no-input`: Never prompt (fail instead, useful for automation)
 
-## When to Expand This Skill
-
-If you repeatedly need detailed reference for a specific service, create `gogcli-<service>-reference.md` with comprehensive command documentation.
-
 ## Common Mistakes
 
 - **Forgetting account flag:** Multi-account setups need `-a user@example.com`
 - **Not using --dry-run:** Test destructive operations first
 - **Ignoring --help:** Commands have many useful flags - always check
 - **Hardcoding IDs:** Use search/list to find IDs dynamically
+- **Wrong time format:** Use ISO 8601 for precise times: `2026-03-05T10:00:00+09:00`
+- **Windows timezone error:** If you see `unknown time zone` errors on Windows, set `ZONEINFO` environment variable: `export ZONEINFO="C:/Root/Tools/Scoop/apps/go/current/lib/time/zoneinfo.zip"` (add to `.bashrc` for persistence)

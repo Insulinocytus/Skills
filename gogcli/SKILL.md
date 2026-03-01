@@ -27,6 +27,121 @@ When encountering unfamiliar gogcli tasks:
 2. **Explore service:** `gog <service> --help` (shows subcommands)
 3. **Check command details:** `gog <service> <action> --help` (shows flags and arguments)
 
+## Drive Operations
+
+### Listing and Searching (Read)
+
+**List root folder (default):**
+```bash
+gog drive ls
+```
+
+**List a folder by ID:**
+```bash
+gog drive ls --parent <folderId>
+```
+
+**Search by name or content:**
+```bash
+gog drive search "budget"
+gog drive search "name:'Q1 report'"
+```
+
+**Get file metadata:**
+```bash
+gog drive get <fileId>
+```
+
+**Get a web URL for a file:**
+```bash
+gog drive url <fileId>
+```
+
+### Downloading (Read)
+
+**Download a file:**
+```bash
+gog drive download <fileId>
+```
+
+**Download with output path:**
+```bash
+gog drive download <fileId> --out "./local-name.pdf"
+```
+
+**Export Google Docs format:**
+```bash
+gog drive download <fileId> --format pdf
+```
+
+### Creating Files and Folders (Create)
+
+**Upload a local file:**
+```bash
+gog drive upload "./report.pdf"
+```
+
+**Upload into a folder:**
+```bash
+gog drive upload "./report.pdf" --parent <folderId>
+```
+
+**Create a folder:**
+```bash
+gog drive mkdir "Project Docs"
+```
+
+**Create a folder inside another folder:**
+```bash
+gog drive mkdir "Project Docs" --parent <folderId>
+```
+
+### Updating Files and Folders (Update)
+
+**Rename a file or folder:**
+```bash
+gog drive rename <fileId> "New Name"
+```
+
+**Move a file to another folder:**
+```bash
+gog drive move <fileId> --parent <folderId>
+```
+
+**Copy a file:**
+```bash
+gog drive copy <fileId> "Copy of File"
+```
+
+### Sharing (Basic)
+
+**Share with a user:**
+```bash
+gog drive share <fileId> --to user --role writer --email user@example.com
+```
+
+**List permissions:**
+```bash
+gog drive permissions <fileId>
+```
+
+**Remove a permission:**
+```bash
+gog drive unshare <fileId> <permissionId>
+```
+
+### Deleting Files and Folders (Delete)
+
+**Move to trash:**
+```bash
+gog drive delete <fileId>
+```
+
+**Delete permanently:**
+```bash
+gog drive delete <fileId> --permanent
+```
+
 ## Gmail Operations
 
 ### Searching Emails (Read) - Most Common
@@ -76,6 +191,13 @@ gog gmail search "query" --oldest=true   # Oldest first
 gog gmail search "query" --max 50        # Limit results
 ```
 
+### Get Email Details
+
+**View email details:**
+```bash
+gog gmail get <messageId>
+```
+
 ### Sending Emails (Create)
 
 **Basic send:**
@@ -101,26 +223,6 @@ gog send --to user@example.com --subject "Newsletter" --body-html "<h1>Hello</h1
 **Reply to email (brief):**
 ```bash
 gog gmail reply <messageId> --body "Thanks for your email"
-```
-
-### Managing Labels (Update)
-
-**Mark as read/unread:**
-```bash
-gog gmail thread modify <threadId> --remove UNREAD  # Mark as read
-gog gmail thread modify <threadId> --add UNREAD     # Mark as unread
-```
-
-**Star/unstar:**
-```bash
-gog gmail thread modify <threadId> --add STARRED    # Star
-gog gmail thread modify <threadId> --remove STARRED # Unstar
-```
-
-**Archive and trash:**
-```bash
-gog gmail thread modify <threadId> --remove INBOX   # Archive
-gog gmail thread modify <threadId> --add TRASH      # Move to trash
 ```
 
 ### Deleting Messages (Delete)
@@ -159,11 +261,24 @@ gog gmail draft send <draftId>
 gog gmail draft delete <draftId>
 ```
 
-### Get Email Details
+### Managing Labels (Update)
 
-**View email details:**
+**Mark as read/unread:**
 ```bash
-gog gmail get <messageId>
+gog gmail thread modify <threadId> --remove UNREAD  # Mark as read
+gog gmail thread modify <threadId> --add UNREAD     # Mark as unread
+```
+
+**Star/unstar:**
+```bash
+gog gmail thread modify <threadId> --add STARRED    # Star
+gog gmail thread modify <threadId> --remove STARRED # Unstar
+```
+
+**Archive and trash:**
+```bash
+gog gmail thread modify <threadId> --remove INBOX   # Archive
+gog gmail thread modify <threadId> --add TRASH      # Move to trash
 ```
 
 ---

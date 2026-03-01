@@ -187,4 +187,4 @@ gog calendar delete primary <eventId> -y         # Then execute
 - **Ignoring --help:** Commands have many useful flags - always check
 - **Hardcoding IDs:** Use search/list to find IDs dynamically
 - **Wrong time format:** Use ISO 8601 for precise times: `2026-03-05T10:00:00+09:00`
-- **Windows timezone error:** If you see `unknown time zone` errors on Windows, set `ZONEINFO` environment variable: `export ZONEINFO="C:/Root/Tools/Scoop/apps/go/current/lib/time/zoneinfo.zip"` (add to `.bashrc` for persistence)
+- **Windows timezone error:** If you see `unknown time zone` errors on Windows, set `ZONEINFO` environment variable to point to Go's timezone database: `export ZONEINFO="/path/to/go/lib/time/zoneinfo.zip"` (find it in your Go installation directory, or download from golang.org; add to `.bashrc` for persistence)

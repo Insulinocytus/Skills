@@ -146,6 +146,13 @@ gog drive delete <fileId> --permanent
 
 ### Searching Emails (Read) - Most Common
 
+**Basic keyword search (the default):**
+```bash
+# Search anywhere in the message (Gmail query string)
+gog gmail search "budget"
+gog gmail search "project alpha"
+```
+
 **Emails from last 24 hours:**
 ```bash
 gog gmail search "newer_than:1d"
@@ -166,8 +173,11 @@ gog gmail search "has:attachment after:2026/03/01"
 gog gmail search "from:alice@example.com newer_than:3d"
 ```
 
-**Basic query syntax:**
+**Common query syntax (Gmail search operators):**
 ```bash
+# Plain text / keywords
+gog gmail search "invoice"
+
 # Sender/recipient
 gog gmail search "from:alice@example.com"
 gog gmail search "to:bob@example.com"
@@ -181,7 +191,7 @@ gog gmail search "is:unread"
 gog gmail search "is:starred"
 
 # Combined queries
-gog gmail search "from:alice@example.com has:attachment newer_than:7d"
+gog gmail search "invoice from:alice@example.com has:attachment newer_than:7d"
 ```
 
 **Control result ordering:**
